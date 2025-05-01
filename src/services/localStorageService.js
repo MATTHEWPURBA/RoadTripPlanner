@@ -70,3 +70,10 @@ export default {
       }
     }
   };
+
+
+
+
+// This file is part of the Vue Front End framework. 
+
+// src/services/localStorageService.js

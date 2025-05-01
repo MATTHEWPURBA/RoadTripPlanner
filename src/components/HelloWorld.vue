@@ -58,3 +58,9 @@ a {
   color: #42b983;
 }
 </style>
+
+
+
+<!-- This file is part of the Vue Front End framework. -->
+
+<!-- src/components/HelloWorld.vue -->

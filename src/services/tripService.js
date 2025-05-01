@@ -60,3 +60,12 @@ export default {
     return response.data;
   }
 };
+
+
+
+
+
+// This file is part of the Vue Front End framework.
+
+
+// src/services/tripService.js

@@ -16,3 +16,9 @@ export default {
   }
 }
 </script>
+
+
+<!--This file is part of the Vue Front End framework. -->
+
+
+<!-- src/views/HomeView.vue -->

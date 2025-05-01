@@ -254,3 +254,10 @@
     color: #7f8c8d;
   }
   </style>
+
+
+
+<!-- This file is part of the Vue Front End framework. -->
+
+
+<!-- src/components/RouteDetails/PointOfInterestList.vue -->

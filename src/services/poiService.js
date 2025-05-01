@@ -75,3 +75,10 @@ export default {
     return 'fas ' + (iconMap[primaryType] || 'fa-map-marker-alt');
   }
 };
+
+
+
+
+// This file is part of the Vue Front End framework.
+
+// src/services/poiService.js

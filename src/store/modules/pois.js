@@ -139,3 +139,12 @@ export default {
     }
   }
 };
+
+
+
+
+
+// This file is part of the Vue Front End framework.
+
+
+// src/store/modules/pois.js

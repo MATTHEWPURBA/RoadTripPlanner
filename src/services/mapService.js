@@ -152,3 +152,11 @@ export default {
     return this.addMarkerWithPopup(map, position, content);
   }
 };
+
+
+
+
+
+// This file is part of the Vue Front End framework.
+
+// src/services/mapService.js

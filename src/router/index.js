@@ -39,3 +39,10 @@ router.beforeEach((to, from, next) => {
 });
 
 export default router;
+
+
+
+
+//  This file is part of the Vue Front End framework
+
+// src/router/index.js

@@ -459,3 +459,9 @@ input[type='date'] {
   }
 }
 </style>
+
+
+
+<!-- This file is part of the Vue Front End framework. -->
+
+<!-- src/components/RouteDetails/EventsFinderForm.vue -->

@@ -46,3 +46,8 @@ app.use(store);
 
 // Mount the app
 app.mount('#app');
+
+
+//This file is part of the Vue Front End framework.
+
+// src/main.js

@@ -104,3 +104,9 @@ export default {
     return (distance * efficiency) / 100;
   }
 };
+
+
+
+// This file is part of the Vue Front End framework.
+
+// src/services/routeService.js

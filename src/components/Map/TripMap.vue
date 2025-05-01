@@ -593,3 +593,9 @@
     }
   }
   </style>
+
+
+
+<!-- This file is part of the Vue Front End framework. -->
+
+<!-- src/components/Map/TripMap.vue -->

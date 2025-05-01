@@ -56,3 +56,10 @@ export default createStore({
   },
   plugins: [vuexLocal.plugin]
 });
+
+
+
+// This file is part of the Vue Front End framework.
+
+
+// src/store/index.js
