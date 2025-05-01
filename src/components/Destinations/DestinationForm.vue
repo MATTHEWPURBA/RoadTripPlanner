@@ -14,24 +14,28 @@
       </div>
 
       <div class="form-group">
-        <label for="address">Address</label>
-        <div class="address-input-group">
-          <input type="text" id="address" v-model="form.address" placeholder="Enter address" />
-          <button type="button" @click="geocodeAddress" class="btn" :disabled="geocoding || !form.address">
-            <i class="fas" :class="geocoding ? 'fa-spinner fa-spin' : 'fa-search'"></i>
-          </button>
-        </div>
-      </div>
+    <label for="address">Address</label>
+    <div class="address-input-group">
+      <input type="text" id="address" v-model="form.address" placeholder="Enter address" />
+      <button type="button" @click="geocodeAddress" class="btn" :disabled="geocoding || !form.address">
+        <i class="fas" :class="geocoding ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+      </button>
+    </div>
+    <!-- Debug info section -->
+    <div v-if="debugInfo" class="debug-info">
+      <p>Debug Info: {{ debugInfo }}</p>
+    </div>
+  </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="latitude">Latitude <span class="required">*</span></label>
-          <input type="number" id="latitude" v-model="form.latitude" step="0.000001" min="-90" max="90" placeholder="e.g. 40.7128" required />
+          <input type="number" id="latitude" v-model="form.latitude" step="any" min="-90" max="90" required />
         </div>
 
         <div class="form-group">
           <label for="longitude">Longitude <span class="required">*</span></label>
-          <input type="number" id="longitude" v-model="form.longitude" step="0.000001" min="-180" max="180" placeholder="e.g. -74.0060" required />
+          <input type="number" id="longitude" v-model="form.longitude" step="any" min="-180" max="180" required />
         </div>
       </div>
 
@@ -61,6 +65,10 @@
 
 <script>
 import { mapActions } from 'vuex';
+// import axios from 'axios';
+import apiClient from '@/services/apiService'; // Import your configured API client
+
+
 
 export default {
   name: 'DestinationForm',
@@ -92,6 +100,7 @@ export default {
       submitting: false,
       geocoding: false,
       errorMessage: '',
+      debugInfo: null, // Add this for debugging
     };
   },
 
@@ -107,6 +116,63 @@ export default {
 
   methods: {
     ...mapActions('destinations', ['geocodeAddress']),
+
+    async geocodeAddress() {
+      if (!this.form.address) return;
+
+      try {
+        this.errorMessage = '';
+        this.geocoding = true;
+        this.debugInfo = "Starting geocoding request...";
+        // Direct API call as a fallback to see if the issue is with Vuex
+        try {
+         // Use apiClient instead of axios directly, or use the full URL
+         const response = await apiClient.post('/destinations/geocode', { address: this.form.address });
+          // OR use the full URL:
+          // const response = await axios.post(process.env.VUE_APP_API_URL + '/destinations/geocode', { address: this.form.address });
+          
+          this.debugInfo = "Direct API call succeeded!";
+          
+          // Use the response data
+          const result = response.data;
+          
+          // Format coordinates to 6 decimal places (about 11cm precision, which is sufficient)
+          this.form.latitude = parseFloat(parseFloat(result.latitude).toFixed(6));
+          this.form.longitude = parseFloat(parseFloat(result.longitude).toFixed(6));
+          this.form.address = result.formatted_address || this.form.address;
+          
+          // If name is empty, use the location name from geocoding
+          if (!this.form.name && result.name) {
+            this.form.name = result.name;
+          }
+          
+          return; // Exit early if direct call succeeds
+        } catch (directError) {
+          this.debugInfo = `Direct API call failed: ${directError.message}. Trying Vuex action...`;
+          // Continue to the Vuex approach if direct call fails
+        }
+
+        // Call geocoding service through Vuex
+        const result = await this.geocodeAddress(this.form.address);
+        this.debugInfo = "Vuex geocoding succeeded!";
+
+        // Update form with returned coordinates
+        this.form.latitude = result.latitude;
+        this.form.longitude = result.longitude;
+        this.form.address = result.formatted_address || this.form.address;
+
+        // If name is empty, use the location name from geocoding
+        if (!this.form.name && result.name) {
+          this.form.name = result.name;
+        }
+      } catch (error) {
+        this.debugInfo = `Error: ${error.message}`;
+        this.errorMessage = 'Could not find location. Please check the address and network connectivity.';
+        console.error('Geocoding error:', error);
+      } finally {
+        this.geocoding = false;
+      }
+    },
 
     initForm() {
       if (this.destination) {
@@ -176,40 +242,32 @@ export default {
       }
     },
 
-    async geocodeAddress() {
-      if (!this.form.address) return;
-
-      try {
-        this.errorMessage = '';
-        this.geocoding = true;
-
-        // Call geocoding service
-        const result = await this.geocodeAddress(this.form.address);
-
-        // Update form with returned coordinates
-        this.form.latitude = result.latitude;
-        this.form.longitude = result.longitude;
-        this.form.address = result.formatted_address || this.form.address;
-
-        // If name is empty, use the location name from geocoding
-        if (!this.form.name && result.name) {
-          this.form.name = result.name;
-        }
-      } catch (error) {
-        this.errorMessage = 'Could not find location. Please check the address.';
-      } finally {
-        this.geocoding = false;
-      }
-    },
+    
 
     closeForm() {
       this.$emit('close');
     },
+
+
+
   },
 };
 </script>
 
 <style scoped>
+
+.debug-info {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #f0f8ff;
+  border: 1px solid #d0e3ff;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
 .destination-form {
   background-color: white;
   border-radius: 8px;

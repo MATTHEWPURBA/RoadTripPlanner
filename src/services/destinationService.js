@@ -58,9 +58,33 @@ export default {
    * @returns {Promise<Object>} Location data with coordinates
    */
   async geocodeAddress(address) {
-    const response = await apiClient.post('/destinations/geocode', { address });
-    return response.data;
+    console.log('Calling geocode API with address:', address);
+    try {
+      const response = await apiClient.post('/destinations/geocode', { address });
+      console.log('Geocode API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error in geocode API call:', error);
+      
+      // Show detailed error information
+      if (error.response) {
+        console.error('API Error Response:', {
+          status: error.response.status,
+          data: error.response.data
+        });
+      } else if (error.request) {
+        console.error('No response received:', error.request);
+      } else {
+        console.error('Error setting up request:', error.message);
+      }
+      
+      throw error;
+    }
   }
+
+
+
+
 };
 
 

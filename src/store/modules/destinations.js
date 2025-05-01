@@ -128,9 +128,20 @@ export default {
     async geocodeAddress({ dispatch }, address) {
       try {
         dispatch('setLoading', true, { root: true });
-        return await destinationService.geocodeAddress(address);
+        console.log('Geocoding address:', address);
+        
+        // Add logging for debugging
+        const response = await destinationService.geocodeAddress(address)
+          .catch(error => {
+            console.error('Geocoding service error:', error);
+            throw error;
+          });
+          
+        console.log('Geocoding response:', response);
+        return response;
       } catch (error) {
-        dispatch('setError', error.message || 'Failed to geocode address', { root: true });
+        console.error('Geocoding failed:', error);
+        dispatch('setError', 'Failed to geocode address: ' + (error.message || 'Unknown error'), { root: true });
         throw error;
       } finally {
         dispatch('setLoading', false, { root: true });
