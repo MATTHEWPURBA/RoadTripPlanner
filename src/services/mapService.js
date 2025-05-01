@@ -150,7 +150,19 @@ export default {
     
     // Add marker with popup
     return this.addMarkerWithPopup(map, position, content);
-  }
+  },
+
+    /**
+   * Calculate the distance between two coordinates
+   * @param {Array} origin [lat, lng]
+   * @param {Array} destination [lat, lng]
+   * @returns {Number} Distance in kilometers
+   */
+    calculateDistance(origin, destination) {
+      const from = L.latLng(origin[0], origin[1]);
+      const to = L.latLng(destination[0], destination[1]);
+      return from.distanceTo(to) / 1000; // convert meters to kilometers
+    }
 };
 
 
