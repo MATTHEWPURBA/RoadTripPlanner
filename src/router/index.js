@@ -19,6 +19,13 @@ const routes = [
     meta: { title: 'Plan a New Trip' }
   },
   {
+    path: '/trip/:id/edit',
+    name: 'EditTrip',
+    component: TripPlannerPage,
+    props: true,
+    meta: { title: 'Edit Trip' }
+  },
+  {
     path: '/trip/:id',
     name: 'TripDetails',
     component: TripDetailsPage,

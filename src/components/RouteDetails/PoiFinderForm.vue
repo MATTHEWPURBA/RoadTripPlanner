@@ -1,90 +1,115 @@
 <template>
-    <div class="poi-finder-form">
-      <div class="finder-header">
-        <h3>Find Points of Interest</h3>
-        <button @click="$emit('close')" class="close-btn">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      
-      <div class="finder-content">
-        <form @submit.prevent="findPois">
-          <div class="form-group">
-            <label for="segment-select">Route Segment</label>
-            <select 
-              id="segment-select" 
-              v-model="form.segmentId"
-              required
+  <div class="poi-finder-form">
+    <div class="finder-header">
+      <h3>Find Points of Interest</h3>
+      <button @click="$emit('close')" class="close-btn">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="finder-content">
+      <form @submit.prevent="findPois">
+        <div class="form-group">
+          <label for="segment-select">Route Segment</label>
+          <select 
+            id="segment-select" 
+            v-model="form.segmentId"
+            required
+          >
+            <option value="" disabled>Select a route segment</option>
+            <option 
+              v-for="segment in routeSegments" 
+              :key="segment.id" 
+              :value="segment.id"
             >
-              <option value="" disabled>Select a route segment</option>
-              <option 
-                v-for="segment in routeSegments" 
-                :key="segment.id" 
-                :value="segment.id"
-              >
-                {{ getSegmentName(segment) }}
-              </option>
-              <option value="all">All segments</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label>Categories of Interest</label>
-            <div class="categories-grid">
-              <label 
-                v-for="category in availableCategories" 
-                :key="category.value"
-                class="category-checkbox"
-              >
-                <input 
-                  type="checkbox" 
-                  v-model="form.categories" 
-                  :value="category.value"
-                >
-                <i :class="category.icon"></i>
-                {{ category.label }}
-              </label>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="search-radius">Search Radius (km)</label>
-            <div class="slider-container">
-              <input 
-                type="range" 
-                id="search-radius" 
-                v-model.number="form.radius" 
-                min="1" 
-                max="20" 
-                step="1"
-                class="radius-slider"
-              >
-              <div class="slider-value">{{ form.radius }} km</div>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="form.replace">
-              Replace existing POIs
+              {{ getSegmentName(segment) }}
+            </option>
+            <option value="all">All segments</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Categories of Interest</label>
+          <div class="categories-grid">
+            <label class="checkbox-item">
+              <input type="checkbox" v-model="form.categories" value="tourist_attraction">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">
+                <i class="fas fa-landmark"></i> Attractions
+              </span>
+            </label>
+            
+            <label class="checkbox-item">
+              <input type="checkbox" v-model="form.categories" value="natural_feature">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">
+                <i class="fas fa-mountain"></i> Nature
+              </span>
+            </label>
+            
+            <label class="checkbox-item">
+              <input type="checkbox" v-model="form.categories" value="museum">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">
+                <i class="fas fa-museum"></i> Museums
+              </span>
+            </label>
+            
+            <label class="checkbox-item">
+              <input type="checkbox" v-model="form.categories" value="restaurant">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">
+                <i class="fas fa-utensils"></i> Restaurants
+              </span>
+            </label>
+            
+            <label class="checkbox-item">
+              <input type="checkbox" v-model="form.categories" value="park">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">
+                <i class="fas fa-tree"></i> Parks
+              </span>
+            </label>
+            
+            <label class="checkbox-item">
+              <input type="checkbox" v-model="form.categories" value="entertainment">
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-label">
+                <i class="fas fa-theater-masks"></i> Entertainment
+              </span>
             </label>
           </div>
-          
-          <div v-if="errorMessage" class="error-message">
-            {{ errorMessage }}
-          </div>
-          
-          <div class="form-actions">
-            <button type="button" @click="$emit('close')" class="btn btn-outline">Cancel</button>
-            <button type="submit" class="btn btn-primary" :disabled="searching">
-              <i v-if="searching" class="fas fa-spinner fa-spin"></i>
-              {{ searching ? 'Searching...' : 'Find Points of Interest' }}
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Search Radius (km)</label>
+          <input type="range" class="radius-slider" v-model="form.radius" min="1" max="10">
+          <div class="slider-value">{{ form.radius }} km</div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-item">
+            <input type="checkbox" v-model="form.replace">
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-label">Replace existing POIs</span>
+          </label>
+        </div>
+        
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" @click="$emit('close')">Cancel</button>
+          <button type="submit" class="btn btn-primary" :disabled="searching">
+            <i v-if="searching" class="fas fa-spinner fa-spin"></i>
+            {{ searching ? 'Searching...' : 'Find Points of Interest' }}
+          </button>
+        </div>
+      </form>
     </div>
-  </template>
+  </div>
+</template>
   
   <script>
   import { mapActions } from 'vuex';
@@ -189,162 +214,273 @@
   </script>
   
   <style scoped>
-  .poi-finder-form {
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
+.poi-finder-form {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.finder-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finder-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #777;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.finder-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: #2c3e50;
+}
+
+select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  background-color: white;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* Custom checkbox styling */
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.checkbox-item:hover {
+  background-color: #f8f9fa;
+}
+
+.checkbox-item input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-custom {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-item:hover .checkbox-custom {
+  border-color: #3498db;
+}
+
+.checkbox-item input:checked ~ .checkbox-custom {
+  background-color: #3498db;
+  border-color: #3498db;
+}
+
+/* Checkmark */
+.checkbox-custom::after {
+  content: "";
+  display: none;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.checkbox-item input:checked ~ .checkbox-custom::after {
+  display: block;
+}
+
+.checkbox-label {
+  margin-left: 0.75rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.9375rem;
+  color: #2c3e50;
+}
+
+.checkbox-label i {
+  margin-right: 0.5rem;
+  color: #3498db;
+  font-size: 1.1rem;
+}
+
+/* Radius slider */
+.radius-slider {
+  width: 100%;
+  height: 5px;
+  background-color: #ddd;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 5px;
+  margin: 10px 0;
+}
+
+.radius-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background-color: #3498db;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.radius-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background-color: #3498db;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.slider-value {
+  font-size: 0.9375rem;
+  color: #7f8c8d;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.error-message {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.btn-primary:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  background-color: white;
+  border: 2px solid #ddd;
+  color: #2c3e50;
+}
+
+.btn-outline:hover {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .categories-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
-  
-  .finder-header {
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .finder-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-  }
-  
-  .close-btn {
-    background: none;
-    border: none;
-    font-size: 1.1rem;
-    cursor: pointer;
-    color: #777;
+}
+
+@media (max-width: 480px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
   }
   
   .finder-content {
-    padding: 1.5rem;
-    overflow-y: auto;
+    padding: 1rem;
   }
-  
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-  
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-  }
-  
-  select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 1rem;
-  }
-  
-  .categories-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-  
-  .category-checkbox {
-    display: flex;
-    align-items: center;
-    font-weight: normal;
-    cursor: pointer;
-  }
-  
-  .category-checkbox input {
-    margin-right: 0.5rem;
-  }
-  
-  .category-checkbox i {
-    margin-right: 0.5rem;
-    color: #3498db;
-  }
-  
-  .slider-container {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .radius-slider {
-    flex: 1;
-    height: 5px;
-    background-color: #ddd;
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 5px;
-  }
-  
-  .radius-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    background-color: #3498db;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-  
-  .radius-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    background-color: #3498db;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-  }
-  
-  .slider-value {
-    font-size: 0.9rem;
-    color: #7f8c8d;
-    min-width: 48px;
-    text-align: right;
-  }
-  
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    font-weight: normal;
-    cursor: pointer;
-  }
-  
-  .checkbox-label input {
-    margin-right: 0.5rem;
-  }
-  
-  .error-message {
-    background-color: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
-    padding: 0.75rem;
-    border-radius: 4px;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-  }
-  
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  
-  /* Responsive adjustments */
-  @media (min-width: 768px) {
-    .categories-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .categories-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-  </style>
+}
+</style>
 
 
 

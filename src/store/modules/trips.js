@@ -106,6 +106,12 @@ export default {
         dispatch('setLoading', true, { root: true });
         const trip = await tripService.getTrip(tripId);
         commit('SET_CURRENT_TRIP', trip);
+
+        // Also ensure we update destinations in the destinations module
+        if (trip.destinations) {
+          dispatch('destinations/setDestinations', trip.destinations, { root: true });
+        }
+
         return trip;
       } catch (error) {
         dispatch('setError', error.message || 'Failed to load trip details', { root: true });

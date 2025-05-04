@@ -147,6 +147,10 @@ export default {
         dispatch('setLoading', false, { root: true });
       }
     },
+
+    setDestinations({ commit }, destinations) {
+      commit('SET_DESTINATIONS', destinations);
+    },
     
     // Set selected destination
     selectDestination({ commit }, destination) {

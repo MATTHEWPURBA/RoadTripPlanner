@@ -1,113 +1,119 @@
 <template>
-    <div class="trip-details-page">
-      <!-- Loading and error states -->
-      <div v-if="loading" class="loading-container">
-        <div class="loading-spinner">
-          <i class="fas fa-spinner fa-spin"></i>
-        </div>
-        <p>Loading trip details...</p>
+  <div class="trip-details-page">
+    <!-- Loading and error states -->
+    <div v-if="loading" class="loading-container">
+      <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
       </div>
-  
-      <div v-else-if="!trip" class="error-container">
-        <div class="error-icon">
-          <i class="fas fa-exclamation-circle"></i>
-        </div>
-        <h3>Trip Not Found</h3>
-        <p>The trip you're looking for doesn't exist or has been deleted.</p>
-        <router-link to="/" class="btn">Return to Home</router-link>
+      <p>Loading trip details...</p>
+    </div>
+
+    <div v-else-if="!trip" class="error-container">
+      <div class="error-icon">
+        <i class="fas fa-exclamation-circle"></i>
       </div>
-  
-      <!-- Trip content when loaded -->
-      <template v-else>
-        <div class="page-header">
-          <div>
-            <h2 class="page-title">{{ trip.name }}</h2>
-            <p v-if="trip.description" class="page-subtitle">{{ trip.description }}</p>
-          </div>
-          <div class="page-actions">
-            <router-link to="/" class="btn btn-outline">
-              <i class="fas fa-arrow-left"></i> Back
-            </router-link>
+      <h3>Trip Not Found</h3>
+      <p>The trip you're looking for doesn't exist or has been deleted.</p>
+      <router-link to="/" class="btn">Return to Home</router-link>
+    </div>
+
+    <!-- Trip content when loaded -->
+    <template v-else>
+      <div class="page-header">
+        <div class="header-info">
+          <h2 class="page-title">{{ trip.name }}</h2>
+          <p v-if="trip.description" class="page-subtitle">{{ trip.description }}</p>
+        </div>
+        <router-link to="/" class="btn btn-outline btn-sm">
+          <i class="fas fa-arrow-left"></i>
+          <span class="btn-text">Back</span>
+        </router-link>
+      </div>
+
+      <!-- Mobile-optimized layout -->
+      <div class="content-layout">
+        <!-- Map section -->
+        <div class="map-section">
+          <TripMap 
+            :trip-id="tripId" 
+            :destinations="destinations" 
+            :route-segments="routeSegments" 
+            :points-of-interest="showPois ? pointsOfInterest : []"
+            :height="mapHeight"
+            @update-destination="handleUpdateDestination"
+            @destination-added="handleDestinationAdded"
+          />
+          
+          <div class="map-controls">
+            <label class="toggle-switch">
+              <input type="checkbox" v-model="showPois">
+              <span class="toggle-slider"></span>
+              <span class="toggle-label">Show Points of Interest</span>
+            </label>
           </div>
         </div>
-  
-        <!-- Main content grid -->
-        <div class="content-grid">
-          <!-- Left column - Map and Summary -->
-          <div class="map-column">
-            <div class="map-container">
-              <TripMap 
-                :trip-id="tripId" 
-                :destinations="destinations" 
-                :route-segments="routeSegments" 
-                :points-of-interest="showPois ? pointsOfInterest : []"
-                height="500px"
-                @update-destination="handleUpdateDestination"
-                @destination-added="handleDestinationAdded"
-              />
-            </div>
-            
-            <div class="toggle-container">
-              <label class="toggle-switch">
-                <input type="checkbox" v-model="showPois">
-                <span class="toggle-slider"></span>
-                <span class="toggle-label">Show Points of Interest</span>
-              </label>
-            </div>
-            
-            <div class="summary-container">
-              <TripSummary 
-                :trip="trip" 
-                @edit-trip="editTrip"
-                @routes-updated="loadTrip" 
-              />
-            </div>
-          </div>
-  
-          <!-- Right column - Destinations and POIs -->
-          <div class="details-column">
-            <div class="destinations-container">
-              <DestinationList 
-                :destinations="destinations" 
-                :route-segments="routeSegments"
-                :trip-id="tripId"
-                :selected-destination-id="selectedDestinationId"
-                @select-destination="selectDestination"
-                @add-destination="showDestinationForm = true"
-                @edit-destination="editDestination"
-                @delete-destination="deleteDestination"
-                @reorder-destinations="reorderDestinations"
-              />
-            </div>
-            
-            <div v-if="showPois && pointsOfInterest.length > 0" class="poi-container">
-              <PointOfInterestList 
-                :points-of-interest="pointsOfInterest"
-                :selected-poi-id="selectedPoiId"
-                @select-poi="selectPoi"
-              />
-            </div>
-            
-            <div v-if="routeSegments.length > 0" class="actions-container">
-              <div class="card">
-                <h3 class="card-title">Discover</h3>
-                <div class="action-buttons">
-                  <button @click="findPointsOfInterest" class="btn btn-block">
-                    <i class="fas fa-search"></i> Find Points of Interest
-                  </button>
-                  <button v-if="hasLongSegments" @click="findAccommodation" class="btn btn-block">
-                    <i class="fas fa-hotel"></i> Find Places to Stay
-                  </button>
-                  <button v-if="trip.start_date" @click="findEvents" class="btn btn-block">
-                    <i class="fas fa-calendar-alt"></i> Find Events
-                  </button>
-                </div>
-              </div>
+        
+        <!-- Summary section -->
+        <div class="summary-section">
+          <TripSummary 
+            :trip="trip" 
+            @edit-trip="editTrip"
+            @routes-updated="loadTrip" 
+          />
+        </div>
+
+        <!-- Destinations section -->
+        <div class="destinations-section">
+          <DestinationList 
+            :destinations="destinations" 
+            :route-segments="routeSegments"
+            :trip-id="tripId"
+            :selected-destination-id="selectedDestinationId"
+            @select-destination="selectDestination"
+            @add-destination="showDestinationForm = true"
+            @edit-destination="editDestination"
+            @delete-destination="deleteDestination"
+            @reorder-destinations="reorderDestinations"
+          />
+        </div>
+        
+        <!-- POIs section -->
+        <div v-if="showPois && pointsOfInterest.length > 0" class="poi-section">
+          <PointOfInterestList 
+            :points-of-interest="pointsOfInterest"
+            :selected-poi-id="selectedPoiId"
+            @select-poi="selectPoi"
+          />
+        </div>
+        
+        <!-- Actions section -->
+        <div v-if="routeSegments.length > 0" class="actions-section">
+          <div class="actions-card">
+            <h3 class="actions-title">Discover</h3>
+            <div class="action-buttons">
+              <button @click="findPointsOfInterest" class="btn btn-block">
+                <i class="fas fa-search"></i>
+                Find Points of Interest
+              </button>
+              <button @click="findAccommodation" class="btn btn-block">
+                <i class="fas fa-hotel"></i>
+                Find Places to Stay
+              </button>
+              <button v-if="trip.start_date" @click="findEvents" class="btn btn-block">
+                <i class="fas fa-calendar-alt"></i>
+                Find Events
+              </button>
             </div>
           </div>
         </div>
-      </template>
+      </div>
+    </template>
   
+
+
+
+
+      
       <!-- Modals and dialogs -->
       <div v-if="showDestinationForm" class="modal">
         <div class="modal-backdrop" @click="showDestinationForm = false"></div>
@@ -163,6 +169,8 @@
         </div>
       </div>
     </div>
+
+    
   </template>
   
   <script>
@@ -238,8 +246,8 @@
       },
       
       hasLongSegments() {
-        // Check if any route segment is longer than 3 hours (10800 seconds)
-        return this.routeSegments.some(segment => segment.duration > 10800);
+        // Check if any route segment is longer than 1 hours (3600 seconds)
+        return this.routeSegments.some(segment => segment.duration > 3600);
       }
     },
     
@@ -274,13 +282,22 @@
       async loadTrip() {
         try {
           this.loading = true;
+
+          // Clear existing data first
+          await this.$store.dispatch('destinations/setDestinations', []);
+          await this.$store.dispatch('routes/setRouteSegments', []);
           
           // Fetch trip with all related data
           const trip = await this.fetchTrip(this.tripId);
           
+          // Explicitly set destinations from the loaded trip
+          if (trip.destinations) {
+            await this.$store.dispatch('destinations/setDestinations', trip.destinations);
+          }
+
           // Set route segments in store
           if (trip.route_segments) {
-            this.setRouteSegments(trip.route_segments);
+            await this.setRouteSegments(trip.route_segments);
           }
           
           // Fetch POIs
@@ -414,200 +431,351 @@
   };
   </script>
   
-  <style scoped>
-  .trip-details-page {
-    position: relative;
+ <style scoped>
+.trip-details-page {
+  position: relative;
+  min-height: 100vh;
+}
+
+
+/* Enhanced modal positioning with better spacing */
+.modal {
+  animation: fadeIn 0.3s ease-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 2rem 1rem; /* Increased padding for better spacing */
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(20px);
+    opacity: 0;
   }
-  
-  /* Loading and error states */
-  .loading-container,
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    text-align: center;
+  to { 
+    transform: translateY(0);
+    opacity: 1;
   }
-  
-  .loading-spinner,
-  .error-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    color: #3498db;
-  }
-  
-  .error-icon {
-    color: #e74c3c;
-  }
-  
-  /* Page header */
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-  }
-  
-  .page-title {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.8rem;
-    color: #2c3e50;
-  }
-  
-  .page-subtitle {
-    margin: 0;
-    color: #7f8c8d;
-    font-size: 1rem;
-  }
-  
-  /* Main content grid */
-  .content-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .map-container {
-    margin-bottom: 1rem;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .toggle-container {
-    margin-bottom: 1rem;
-  }
-  
-  .toggle-switch {
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-  }
-  
-  .toggle-slider {
-    position: relative;
-    width: 44px;
-    height: 24px;
-    background-color: #ccc;
-    border-radius: 24px;
-    margin-right: 10px;
-    transition: background-color 0.3s;
-  }
-  
-  .toggle-switch input {
-    display: none;
-  }
-  
-  .toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.3s;
-  }
-  
-  .toggle-switch input:checked + .toggle-slider {
-    background-color: #3498db;
-  }
-  
-  .toggle-switch input:checked + .toggle-slider:before {
-    transform: translateX(20px);
-  }
-  
-  .toggle-label {
-    font-size: 0.9rem;
-    color: #555;
-  }
-  
-  .summary-container,
-  .destinations-container,
-  .poi-container,
-  .actions-container {
-    margin-bottom: 1.5rem;
-  }
-  
-  .card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-  }
-  
-  .card-title {
-    margin: 0 0 1rem 0;
-    font-size: 1.2rem;
-    color: #2c3e50;
-  }
-  
-  .action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-  
-  .btn-block {
-    display: block;
-    width: 100%;
-    text-align: center;
-  }
-  
-  /* Modal */
+}
+
+.modal-content {
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+  background-color: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  margin-top: 2rem; /* Add top margin to create space from cards */
+  margin-bottom: 2rem; /* Add bottom margin for balance */
+}
+
+/* Loading and error states */
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  min-height: 50vh;
+}
+
+.loading-spinner,
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #3498db;
+}
+
+.error-icon {
+  color: #e74c3c;
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.header-info {
+  flex: 1;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+.page-subtitle {
+  margin: 0.5rem 0 0;
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+.btn-text {
+  display: none;
+}
+
+/* Content layout - Mobile first */
+.content-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Map section */
+.map-section {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.map-controls {
+  padding: 1rem;
+  border-top: 1px solid #eee;
+}
+
+/* Toggle switch */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.75rem;
+}
+
+.toggle-slider {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background-color: #ddd;
+  border-radius: 24px;
+  transition: background-color 0.3s;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background-color: #3498db;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+
+.toggle-label {
+  font-size: 0.9375rem;
+  color: #555;
+}
+
+/* Section styling */
+.summary-section,
+.destinations-section,
+.poi-section,
+.actions-section {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.actions-card {
+  padding: 1.5rem;
+}
+
+.actions-title {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
+  color: #2c3e50;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-block {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+
   .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .modal-backdrop {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    padding: 3rem 2rem; /* Even more padding on larger screens */
   }
   
   .modal-content {
-    position: relative;
-    z-index: 2001;
-    width: 90%;
-    max-width: 500px;
-    max-height: 90vh;
-    overflow-y: auto;
+    margin-top: 3rem; /* Increased spacing on larger screens */
+    margin-bottom: 3rem;
+  }
+  .page-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
   }
   
-  .poi-finder-modal {
-    max-width: 600px;
+  .page-title {
+    font-size: 1.75rem;
   }
   
-  /* Responsive layout */
-  @media (min-width: 768px) {
-    .content-grid {
-      grid-template-columns: 3fr 2fr;
-    }
+  .btn-text {
+    display: inline;
   }
   
-  @media (max-width: 767px) {
-    .page-header {
-      flex-direction: column;
-    }
-    
-    .page-actions {
-      margin-top: 1rem;
-    }
+  .content-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 100%;
+    margin: 0 auto;
   }
-  </style>
+  
+  /* Map takes full width */
+  .map-section {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 450px;
+  }
+  
+  /* Summary below map */
+  .summary-section {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  /* Destinations below summary */
+  .destinations-section {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  
+  /* POI section below destinations */
+  .poi-section {
+    grid-column: 1;
+    grid-row: 4;
+  }
+  
+  /* Actions below POI */
+  .actions-section {
+    grid-column: 1;
+    grid-row: 5;
+  }
+}
+
+@media (max-width: 767px) {
+  .modal {
+    align-items: flex-start; /* Align to top on mobile */
+    padding-top: 4rem; /* Add substantial top padding */
+  }
+}
+
+/* Desktop - Modified layout */
+@media (min-width: 1024px) {
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .content-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  
+  /* Map takes full width */
+  .map-section {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  
+  /* Summary and POI are side by side below map */
+  .summary-section {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  .poi-section {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  
+  /* Destinations and Actions are below */
+  .destinations-section {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  
+  .actions-section {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  
+  /* If POI is not shown, summary takes full width */
+  .poi-section:empty + .destinations-section {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  
+  /* Adjust map height for desktop */
+  .map-section {
+    min-height: 600px;
+  }
+}
+
+/* Extra large screens */
+@media (min-width: 1400px) {
+  .content-layout {
+    max-width: 1600px;
+  }
+}
+</style>
 
 
 

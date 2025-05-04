@@ -8,10 +8,10 @@
     </div>
 
     <div class="finder-content">
-      <div v-if="!searching && !events.length">
+      <div v-if="!searching && !hasSearched">
         <form @submit.prevent="searchEvents">
           <div class="form-group">
-            <label>Trip Dates</label>
+            <label class="form-label">Trip Dates</label>
             <div class="date-range">
               <div class="date-input">
                 <label for="start-date">From</label>
@@ -25,27 +25,46 @@
           </div>
 
           <div class="form-group">
-            <label>Event Types</label>
+            <label class="form-label">Event Types</label>
             <div class="event-types">
-              <label class="checkbox-label">
+              <label class="checkbox-item">
                 <input type="checkbox" v-model="form.eventTypes" value="music" />
-                <i class="fas fa-music"></i> Music
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-label">
+                  <i class="fas fa-music"></i> Music
+                </span>
               </label>
-              <label class="checkbox-label">
+              
+              <label class="checkbox-item">
                 <input type="checkbox" v-model="form.eventTypes" value="festival" />
-                <i class="fas fa-glass-cheers"></i> Festivals
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-label">
+                  <i class="fas fa-glass-cheers"></i> Festivals
+                </span>
               </label>
-              <label class="checkbox-label">
+              
+              <label class="checkbox-item">
                 <input type="checkbox" v-model="form.eventTypes" value="sports" />
-                <i class="fas fa-football-ball"></i> Sports
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-label">
+                  <i class="fas fa-football-ball"></i> Sports
+                </span>
               </label>
-              <label class="checkbox-label">
+              
+              <label class="checkbox-item">
                 <input type="checkbox" v-model="form.eventTypes" value="arts" />
-                <i class="fas fa-palette"></i> Arts
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-label">
+                  <i class="fas fa-palette"></i> Arts
+                </span>
               </label>
-              <label class="checkbox-label">
+              
+              <label class="checkbox-item">
                 <input type="checkbox" v-model="form.eventTypes" value="food" />
-                <i class="fas fa-utensils"></i> Food
+                <span class="checkbox-custom"></span>
+                <span class="checkbox-label">
+                  <i class="fas fa-utensils"></i> Food
+                </span>
               </label>
             </div>
           </div>
@@ -81,7 +100,9 @@
             </div>
             <div class="event-details">
               <h5>{{ event.name }}</h5>
-              <p v-if="event.venue" class="event-venue"><i class="fas fa-map-marker-alt"></i> {{ event.venue }}</p>
+              <p v-if="event.venue" class="event-venue">
+                <i class="fas fa-map-marker-alt"></i> {{ event.venue }}
+              </p>
               <p v-if="event.description" class="event-description">
                 {{ truncateText(event.description, 100) }}
               </p>
@@ -94,7 +115,9 @@
         </div>
 
         <div class="results-actions">
-          <button @click="resetSearch" class="btn btn-outline"><i class="fas fa-search"></i> New Search</button>
+          <button @click="resetSearch" class="btn btn-outline">
+            <i class="fas fa-search"></i> New Search
+          </button>
           <button @click="$emit('close')" class="btn btn-primary">Done</button>
         </div>
       </div>
@@ -238,7 +261,7 @@ export default {
 <style scoped>
 .events-finder {
   background-color: white;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   max-height: 90vh;
   display: flex;
@@ -246,7 +269,7 @@ export default {
 }
 
 .finder-header {
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #eee;
   display: flex;
   justify-content: space-between;
@@ -255,15 +278,25 @@ export default {
 
 .finder-header h3 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .close-btn {
   background: none;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   cursor: pointer;
   color: #777;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background-color: #f5f5f5;
+  color: #333;
 }
 
 .finder-content {
@@ -275,80 +308,185 @@ export default {
   margin-bottom: 1.5rem;
 }
 
-label {
+.form-label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-weight: 600;
+  font-size: 0.9375rem;
+  color: #2c3e50;
 }
 
+/* Date range styling */
 .date-range {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
 .date-input {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .date-input label {
-  font-weight: normal;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: #7f8c8d;
+  margin-bottom: 0.25rem;
 }
 
-input[type='date'] {
-  width: 100%;
+.date-input input {
   padding: 0.75rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
   font-family: inherit;
   font-size: 1rem;
 }
 
+.date-input input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Event types grid */
 .event-types {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
 }
 
-.checkbox-label {
+/* Custom checkbox styling */
+.checkbox-item {
   display: flex;
   align-items: center;
-  font-weight: normal;
   cursor: pointer;
+  user-select: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background-color 0.2s;
 }
 
-.checkbox-label input {
-  margin-right: 0.5rem;
+.checkbox-item:hover {
+  background-color: #f8f9fa;
+}
+
+.checkbox-item input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-custom {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-item:hover .checkbox-custom {
+  border-color: #3498db;
+}
+
+.checkbox-item input:checked ~ .checkbox-custom {
+  background-color: #3498db;
+  border-color: #3498db;
+}
+
+/* Checkmark */
+.checkbox-custom::after {
+  content: "";
+  display: none;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.checkbox-item input:checked ~ .checkbox-custom::after {
+  display: block;
+}
+
+.checkbox-label {
+  margin-left: 0.75rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.9375rem;
+  color: #2c3e50;
 }
 
 .checkbox-label i {
   margin-right: 0.5rem;
   color: #3498db;
+  font-size: 1.1rem;
 }
 
+/* Error message */
 .error-message {
   background-color: rgba(231, 76, 60, 0.1);
   color: #e74c3c;
-  padding: 0.75rem;
-  border-radius: 4px;
+  padding: 1rem;
+  border-radius: 8px;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
 }
 
+/* Form actions */
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
 }
 
-.searching-state {
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.2s ease;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 3rem;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.btn-outline {
+  background-color: white;
+  border: 2px solid #ddd;
+  color: #2c3e50;
+}
+
+.btn-outline:hover {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+/* Searching state */
+.searching-state {
   text-align: center;
+  padding: 3rem 1rem;
 }
 
 .spinner {
@@ -357,79 +495,80 @@ input[type='date'] {
   margin-bottom: 1rem;
 }
 
+/* Results */
 .results-title {
-  margin: 0 0 1.5rem 0;
-  font-size: 1.1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
   color: #2c3e50;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.5rem;
 }
 
 .events-timeline {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1.5rem;
 }
 
 .event-card {
   display: flex;
-  background-color: #f9f9f9;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #eee;
   border-radius: 8px;
-  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.event-card:hover {
+  border-color: #3498db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .event-date {
-  padding: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
 }
 
 .date-badge {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   background-color: #3498db;
   color: white;
-  width: 60px;
-  height: 60px;
   border-radius: 8px;
+  padding: 0.5rem;
   text-align: center;
+  min-width: 60px;
 }
 
-.date-badge .month {
-  font-size: 0.8rem;
+.month {
+  display: block;
+  font-size: 0.875rem;
   text-transform: uppercase;
-  font-weight: bold;
 }
 
-.date-badge .day {
+.day {
+  display: block;
   font-size: 1.5rem;
-  font-weight: bold;
-}
-
-.event-details {
-  padding: 0.75rem;
-  flex: 1;
+  font-weight: 600;
 }
 
 .event-details h5 {
   margin: 0 0 0.5rem 0;
-  font-size: 1rem;
+  font-size: 1.125rem;
+  color: #2c3e50;
 }
 
 .event-venue {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   color: #7f8c8d;
+  margin: 0 0 0.5rem 0;
+}
+
+.event-venue i {
+  color: #3498db;
+  margin-right: 0.5rem;
 }
 
 .event-description {
+  font-size: 0.9375rem;
+  color: #555;
   margin: 0;
-  font-size: 0.85rem;
-  color: #7f8c8d;
 }
 
 .empty-results {
@@ -442,20 +581,29 @@ input[type='date'] {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
   border-top: 1px solid #eee;
 }
 
 /* Responsive adjustments */
+@media (min-width: 768px) {
+  .event-types {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 480px) {
   .date-range {
-    flex-direction: column;
-    gap: 0.75rem;
+    grid-template-columns: 1fr;
   }
-
+  
   .event-types {
     grid-template-columns: 1fr;
+  }
+  
+  .finder-content {
+    padding: 1rem;
   }
 }
 </style>

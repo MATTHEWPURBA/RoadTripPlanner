@@ -1,60 +1,59 @@
 <template>
-    <div class="trip-map-container">
-      <div class="map-controls" v-if="!readonly">
-        <div class="map-control-panel">
-          <button 
-            @click="toggleMapClick" 
-            :class="['map-control-btn', { active: mapClickActive }]"
-            title="Click on map to add destination"
-          >
-            <i class="fas fa-map-marker-alt"></i>
-          </button>
-          <button 
-            @click="centerMap" 
-            class="map-control-btn"
-            title="Center map on all destinations"
-          >
-            <i class="fas fa-crosshairs"></i>
-          </button>
-        </div>
-        <div class="map-instructions" v-if="mapClickActive">
-          Click on the map to add a new destination
-        </div>
+  <div class="trip-map-container">
+    <div class="map-controls" v-if="!readonly">
+      <button 
+        @click="toggleMapClick" 
+        :class="['map-control-btn', { active: mapClickActive }]"
+        :title="mapClickActive ? 'Cancel adding destination' : 'Click map to add destination'"
+      >
+        <i class="fas" :class="mapClickActive ? 'fa-times' : 'fa-map-marker-alt'"></i>
+      </button>
+      <button 
+        @click="centerMap" 
+        class="map-control-btn"
+        title="Center map on all destinations"
+      >
+        <i class="fas fa-crosshairs"></i>
+      </button>
+    </div>
+    
+    <div ref="mapContainer" class="map-container"></div>
+    
+    <div v-if="mapClickActive" class="map-instructions">
+      Tap on the map to add a new destination
+    </div>
+    
+    <div v-if="temporaryDestination" class="temp-destination-panel">
+      <div class="panel-header">
+        <h3>Add New Destination</h3>
+        <button @click="cancelTemporaryDestination" class="close-btn">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
-      
-      <div ref="mapContainer" class="map-container"></div>
-      
-      <div v-if="temporaryDestination" class="temp-destination-panel">
-        <div class="panel-header">
-          <h3>Add New Destination</h3>
-          <button @click="cancelTemporaryDestination" class="close-btn">
-            <i class="fas fa-times"></i>
-          </button>
+      <div class="panel-body">
+        <div class="form-group">
+          <label for="dest-name">Name</label>
+          <input 
+            type="text" 
+            id="dest-name" 
+            v-model="temporaryDestination.name"
+            placeholder="Enter destination name"
+          >
         </div>
-        <div class="panel-body">
-          <div class="form-group">
-            <label for="dest-name">Name</label>
-            <input 
-              type="text" 
-              id="dest-name" 
-              v-model="temporaryDestination.name"
-              placeholder="Enter destination name"
-            >
-          </div>
-          <div class="form-group">
-            <label>Location</label>
-            <p class="coordinates">
-              {{ formatCoordinates(temporaryDestination.latitude, temporaryDestination.longitude) }}
-            </p>
-          </div>
-          <div class="panel-actions">
-            <button @click="cancelTemporaryDestination" class="btn btn-outline">Cancel</button>
-            <button @click="saveTemporaryDestination" class="btn btn-primary">Add Destination</button>
-          </div>
+        <div class="form-group">
+          <label>Location</label>
+          <p class="coordinates">
+            {{ formatCoordinates(temporaryDestination.latitude, temporaryDestination.longitude) }}
+          </p>
+        </div>
+        <div class="panel-actions">
+          <button @click="cancelTemporaryDestination" class="btn btn-outline">Cancel</button>
+          <button @click="saveTemporaryDestination" class="btn btn-primary">Add</button>
         </div>
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
   <script>
   import { mapGetters, mapActions } from 'vuex';
@@ -434,165 +433,192 @@
   </script>
   
   <style scoped>
-  .trip-map-container {
-    position: relative;
-    width: 100%;
-    border-radius: 8px;
-    overflow: hidden;
+.trip-map-container {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.map-container {
+  width: 100%;
+  min-height: 300px;
+  z-index: 1;
+}
+
+.map-controls {
+  position: absolute;
+  top: 70px; /* Account for navbar height */
+  right: 10px;
+  z-index: 800; /* Lowered to avoid conflicts */
+  display: flex;
+  gap: 8px;
+}
+
+.map-control-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+}
+
+.map-control-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.map-control-btn.active {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.map-instructions {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  text-align: center;
+  max-width: 90%;
+}
+
+.temp-destination-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
   }
-  
+  to {
+    transform: translateY(0);
+  }
+}
+
+.panel-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: #2c3e50;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  color: #777;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
+.panel-body {
+  padding: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.coordinates {
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-family: monospace;
+  color: #333;
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.panel-actions .btn {
+  flex: 1;
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
   .map-container {
-    width: 100%;
-    min-height: 300px;
-    z-index: 1;
+    min-height: 400px;
   }
-  
+
   .map-controls {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 10px;
+    top: 10px; /* Slightly less for mobile navbar */
   }
-  
-  .map-control-panel {
-    background-color: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 5px;
-    display: flex;
-    gap: 5px;
-  }
-  
-  .map-control-btn {
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: none;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: #333;
-  }
-  
-  .map-control-btn:hover {
-    background-color: #f5f5f5;
-  }
-  
-  .map-control-btn.active {
-    background-color: #e3f2fd;
-    color: #3498db;
-  }
-  
-  .map-instructions {
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 4px;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
+
   
   .temp-destination-panel {
-    position: absolute;
     bottom: 20px;
     left: 20px;
-    width: calc(100% - 40px);
-    max-width: 400px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    width: 400px;
+    border-radius: 12px;
   }
-  
-  .panel-header {
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .map-container {
+    min-height: 500px;
   }
-  
-  .panel-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-  }
-  
-  .close-btn {
-    background: none;
-    border: none;
-    font-size: 1.1rem;
-    cursor: pointer;
-    color: #777;
-  }
-  
-  .panel-body {
-    padding: 1rem;
-  }
-  
-  .form-group {
-    margin-bottom: 1rem;
-  }
-  
-  .coordinates {
-    background-color: #f5f5f5;
-    padding: 8px;
-    border-radius: 4px;
-    font-family: monospace;
-    color: #333;
-  }
-  
-  .panel-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 1rem;
-  }
-  
-  .btn-outline {
-    background-color: transparent;
-    border: 1px solid #ddd;
-    color: #333;
-  }
-  
-  /* Destination popup style (applied through global CSS) */
-  :global(.destination-popup) {
-    padding: 5px;
-  }
-  
-  :global(.destination-popup h3) {
-    margin: 0 0 5px 0;
-    font-size: 1rem;
-  }
-  
-  :global(.destination-popup p) {
-    margin: 5px 0;
-    font-size: 0.9rem;
-  }
-  
-  :global(.coordinates) {
-    font-family: monospace;
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
-  :global(.distance-info) {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #eee;
-  }
-  
-  /* Responsive adjustments */
-  @media (min-width: 768px) {
-    .temp-destination-panel {
-      width: 400px;
-    }
-  }
-  </style>
+}
+
+/* Leaflet popup overrides */
+:global(.leaflet-popup-content) {
+  margin: 0.75rem;
+  font-size: 0.875rem;
+}
+
+:global(.leaflet-popup-content-wrapper) {
+  border-radius: 8px;
+}
+
+:global(.poi-popup h3) {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+}
+
+:global(.poi-popup p) {
+  margin: 0.25rem 0;
+  font-size: 0.875rem;
+}
+</style>
 
 
 
