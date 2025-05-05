@@ -100,9 +100,28 @@ export default {
     },
     
     // Reorder destinations
-    async reorderDestinations({ commit, dispatch }, { tripId, destinations }) {
+    async reorderDestinations({ commit, dispatch }, payload) {
       try {
         dispatch('setLoading', true, { root: true });
+    
+        // Enhanced debugging
+        console.log('reorderDestinations received:', payload);
+        console.log('payload type:', typeof payload);
+        console.log('Is array?:', Array.isArray(payload));
+        
+        // Validate payload
+        if (!payload || !payload.tripId || !payload.destinations) {
+          console.error('Invalid payload structure:', payload);
+          throw new Error('Invalid payload for reorderDestinations');
+        }
+        
+        const { tripId, destinations } = payload;
+        
+        // Ensure destinations is an array
+        if (!Array.isArray(destinations)) {
+          throw new Error('Destinations must be an array');
+        }
+        
         // Add order property to each destination based on index
         const destinationsWithOrder = destinations.map((dest, index) => ({
           id: dest.id,

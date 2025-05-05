@@ -107,7 +107,11 @@
     props: {
       trip: {
         type: Object,
-        required: true
+        required: true,
+        validator(value) {
+      // Ensure the trip object has an id
+      return value && typeof value.id !== 'undefined';
+    }
       },
       readonly: {
         type: Boolean,
@@ -159,6 +163,14 @@
       async recalculateRoutes() {
         if (this.calculating) return;
         
+          // Validate that we have a trip with an ID
+        if (!this.trip || !this.trip.id) {
+          console.error('Cannot recalculate routes: Trip or trip ID is missing', this.trip);
+          this.$emit('error', 'Unable to recalculate routes: Trip information is missing');
+          return;
+        }
+
+
         try {
           this.calculating = true;
           await this.calculateRoutes(this.trip.id);

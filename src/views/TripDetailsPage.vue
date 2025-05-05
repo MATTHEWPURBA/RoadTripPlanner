@@ -34,58 +34,42 @@
       <div class="content-layout">
         <!-- Map section -->
         <div class="map-section">
-          <TripMap 
-            :trip-id="tripId" 
-            :destinations="destinations" 
-            :route-segments="routeSegments" 
-            :points-of-interest="showPois ? pointsOfInterest : []"
-            :height="mapHeight"
-            @update-destination="handleUpdateDestination"
-            @destination-added="handleDestinationAdded"
-          />
-          
+          <TripMap :trip-id="tripId" :destinations="destinations" :route-segments="routeSegments" :points-of-interest="showPois ? pointsOfInterest : []" :height="mapHeight" @update-destination="handleUpdateDestination" @destination-added="handleDestinationAdded" />
+
           <div class="map-controls">
             <label class="toggle-switch">
-              <input type="checkbox" v-model="showPois">
+              <input type="checkbox" v-model="showPois" />
               <span class="toggle-slider"></span>
               <span class="toggle-label">Show Points of Interest</span>
             </label>
           </div>
         </div>
-        
+
         <!-- Summary section -->
         <div class="summary-section">
-          <TripSummary 
-            :trip="trip" 
-            @edit-trip="editTrip"
-            @routes-updated="loadTrip" 
-          />
+          <TripSummary :trip="trip" @edit-trip="editTrip" @routes-updated="loadTrip" @error="handleError" />
         </div>
 
         <!-- Destinations section -->
         <div class="destinations-section">
-          <DestinationList 
-            :destinations="destinations" 
+          <DestinationList
+            :destinations="destinations"
             :route-segments="routeSegments"
             :trip-id="tripId"
             :selected-destination-id="selectedDestinationId"
-            @select-destination="selectDestination"
+            @select-destination="handleSelectDestination"
             @add-destination="showDestinationForm = true"
             @edit-destination="editDestination"
             @delete-destination="deleteDestination"
-            @reorder-destinations="reorderDestinations"
+            @reorder-destinations="handleReorderDestinations"
           />
         </div>
-        
+
         <!-- POIs section -->
         <div v-if="showPois && pointsOfInterest.length > 0" class="poi-section">
-          <PointOfInterestList 
-            :points-of-interest="pointsOfInterest"
-            :selected-poi-id="selectedPoiId"
-            @select-poi="selectPoi"
-          />
+          <PointOfInterestList :points-of-interest="pointsOfInterest" :selected-poi-id="selectedPoiId" @select-poi="selectPoi" />
         </div>
-        
+
         <!-- Actions section -->
         <div v-if="routeSegments.length > 0" class="actions-section">
           <div class="actions-card">
@@ -108,335 +92,319 @@
         </div>
       </div>
     </template>
-  
 
-
-
-
-      
-      <!-- Modals and dialogs -->
-      <div v-if="showDestinationForm" class="modal">
-        <div class="modal-backdrop" @click="showDestinationForm = false"></div>
-        <div class="modal-content">
-          <DestinationForm 
-            :trip-id="tripId"
-            :destination="destinationToEdit"
-            :max-order="destinations.length"
-            @close="closeDestinationForm"
-            @add-destination="addDestination"
-            @update-destination="updateDestination"
-          />
-        </div>
-      </div>
-      
-      <!-- POI finder modal -->
-      <div v-if="showPoiFinder" class="modal">
-        <div class="modal-backdrop" @click="showPoiFinder = false"></div>
-        <div class="modal-content poi-finder-modal">
-          <PoiFinderForm
-            :trip-id="tripId"
-            :route-segments="routeSegments"
-            @close="showPoiFinder = false"
-            @pois-found="handlePoisFound"
-          />
-        </div>
-      </div>
-      
-      <!-- Accommodation finder modal -->
-      <div v-if="showAccommodationFinder" class="modal">
-        <div class="modal-backdrop" @click="showAccommodationFinder = false"></div>
-        <div class="modal-content">
-          <AccommodationFinderForm
-            :trip-id="tripId"
-            :route-segments="routeSegments"
-            @close="showAccommodationFinder = false"
-            @accommodations-found="handleAccommodationsFound"
-          />
-        </div>
-      </div>
-      
-      <!-- Events finder modal -->
-      <div v-if="showEventsFinder" class="modal">
-        <div class="modal-backdrop" @click="showEventsFinder = false"></div>
-        <div class="modal-content">
-          <EventsFinderForm
-            :trip-id="tripId"
-            :start-date="trip && trip.start_date"
-            :end-date="trip && trip.end_date"
-            @close="showEventsFinder = false"
-            @events-found="handleEventsFound"
-          />
-        </div>
+    <!-- Modals and dialogs -->
+    <div v-if="showDestinationForm" class="modal">
+      <div class="modal-backdrop" @click="showDestinationForm = false"></div>
+      <div class="modal-content">
+        <DestinationForm :trip-id="tripId" :destination="destinationToEdit" :max-order="destinations.length" @close="closeDestinationForm" @add-destination="addDestination" @update-destination="updateDestination" />
       </div>
     </div>
 
-    
-  </template>
-  
-  <script>
-  import { mapGetters, mapActions } from 'vuex';
-  import TripMap from '@/components/Map/TripMap.vue';
-  import TripSummary from '@/components/Summary/TripSummary.vue';
-  import DestinationList from '@/components/Destinations/DestinationList.vue';
-  import DestinationForm from '@/components/Destinations/DestinationForm.vue';
-  import PointOfInterestList from '@/components/RouteDetails/PointOfInterestList.vue';
-  import PoiFinderForm from '@/components/RouteDetails/PoiFinderForm.vue';
-  import AccommodationFinderForm from '@/components/RouteDetails/AccommodationFinderForm.vue';
-  import EventsFinderForm from '@/components/RouteDetails/EventsFinderForm.vue';
-  
-  export default {
-    name: 'TripDetailsPage',
-    
-    components: {
-      TripMap,
-      TripSummary,
-      DestinationList,
-      DestinationForm,
-      PointOfInterestList,
-      PoiFinderForm,
-      AccommodationFinderForm,
-      EventsFinderForm
-    },
-    
-    props: {
-      id: {
-        type: [String, Number],
-        required: true
-      }
-    },
-    
-    data() {
-      return {
-        loading: true,
-        showDestinationForm: false,
-        destinationToEdit: null,
-        selectedDestinationId: null,
-        selectedPoiId: null,
-        showPois: true,
-        showPoiFinder: false,
-        showAccommodationFinder: false,
-        showEventsFinder: false
-      };
-    },
-    
-    computed: {
-      ...mapGetters('trips', ['currentTrip']),
-      ...mapGetters('destinations', ['sortedDestinations']),
-      ...mapGetters('routes', ['allRouteSegments']),
-      ...mapGetters('pois', ['allPois', 'allAccommodations', 'allEvents']),
-      
-      tripId() {
-        return parseInt(this.id);
-      },
-      
-      trip() {
-        return this.currentTrip;
-      },
-      
-      destinations() {
-        return this.sortedDestinations;
-      },
-      
-      routeSegments() {
-        return this.allRouteSegments;
-      },
-      
-      pointsOfInterest() {
-        return this.allPois;
-      },
-      
-      hasLongSegments() {
-        // Check if any route segment is longer than 1 hours (3600 seconds)
-        return this.routeSegments.some(segment => segment.duration > 3600);
-      }
-    },
-    
-    watch: {
-      // Re-fetch trip data if ID changes
-      id: {
-        handler() {
-          this.loadTrip();
-        },
-        immediate: true
-      }
-    },
-    
-    methods: {
-      ...mapActions('trips', ['fetchTrip', 'calculateRoutes']),
-      ...mapActions('destinations', [
-        'addDestination', 
-        'updateDestination', 
-        'deleteDestination',
-        'reorderDestinations',
-        'selectDestination'
-      ]),
-      ...mapActions('routes', ['setRouteSegments']),
-      ...mapActions('pois', [
-        'fetchPoisForTrip', 
-        'selectPoi',
-        'findPoisForSegment',
-        'findAccommodation',
-        'findEvents'
-      ]),
-      
-      async loadTrip() {
-        try {
-          this.loading = true;
+    <!-- POI finder modal -->
+    <div v-if="showPoiFinder" class="modal">
+      <div class="modal-backdrop" @click="showPoiFinder = false"></div>
+      <div class="modal-content poi-finder-modal">
+        <PoiFinderForm :trip-id="tripId" :route-segments="routeSegments" @close="showPoiFinder = false" @pois-found="handlePoisFound" />
+      </div>
+    </div>
 
-          // Clear existing data first
-          await this.$store.dispatch('destinations/setDestinations', []);
-          await this.$store.dispatch('routes/setRouteSegments', []);
-          
-          // Fetch trip with all related data
-          const trip = await this.fetchTrip(this.tripId);
-          
-          // Explicitly set destinations from the loaded trip
-          if (trip.destinations) {
-            await this.$store.dispatch('destinations/setDestinations', trip.destinations);
-          }
+    <!-- Accommodation finder modal -->
+    <div v-if="showAccommodationFinder" class="modal">
+      <div class="modal-backdrop" @click="showAccommodationFinder = false"></div>
+      <div class="modal-content">
+        <AccommodationFinderForm :trip-id="tripId" :route-segments="routeSegments" @close="showAccommodationFinder = false" @accommodations-found="handleAccommodationsFound" />
+      </div>
+    </div>
 
-          // Set route segments in store
-          if (trip.route_segments) {
-            await this.setRouteSegments(trip.route_segments);
-          }
-          
-          // Fetch POIs
-          await this.fetchPoisForTrip(this.tripId);
-          
-          // Clear selections
-          this.selectedDestinationId = null;
-          this.selectedPoiId = null;
-        } catch (error) {
-          console.error('Error loading trip:', error);
-        } finally {
-          this.loading = false;
+    <!-- Events finder modal -->
+    <div v-if="showEventsFinder" class="modal">
+      <div class="modal-backdrop" @click="showEventsFinder = false"></div>
+      <div class="modal-content">
+        <EventsFinderForm :trip-id="tripId" :start-date="trip && trip.start_date" :end-date="trip && trip.end_date" @close="showEventsFinder = false" @events-found="handleEventsFound" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { mapGetters, mapActions } from 'vuex';
+import TripMap from '@/components/Map/TripMap.vue';
+import TripSummary from '@/components/Summary/TripSummary.vue';
+import DestinationList from '@/components/Destinations/DestinationList.vue';
+import DestinationForm from '@/components/Destinations/DestinationForm.vue';
+import PointOfInterestList from '@/components/RouteDetails/PointOfInterestList.vue';
+import PoiFinderForm from '@/components/RouteDetails/PoiFinderForm.vue';
+import AccommodationFinderForm from '@/components/RouteDetails/AccommodationFinderForm.vue';
+import EventsFinderForm from '@/components/RouteDetails/EventsFinderForm.vue';
+
+export default {
+  name: 'TripDetailsPage',
+
+  components: {
+    TripMap,
+    TripSummary,
+    DestinationList,
+    DestinationForm,
+    PointOfInterestList,
+    PoiFinderForm,
+    AccommodationFinderForm,
+    EventsFinderForm,
+  },
+
+  props: {
+    id: {
+      type: [String, Number],
+      required: true,
+    },
+  },
+
+  data() {
+    return {
+      loading: true,
+      showDestinationForm: false,
+      destinationToEdit: null,
+      selectedDestinationId: null,
+      selectedPoiId: null,
+      showPois: true,
+      showPoiFinder: false,
+      showAccommodationFinder: false,
+      showEventsFinder: false,
+    };
+  },
+
+  computed: {
+    ...mapGetters('trips', ['currentTrip']),
+    ...mapGetters('destinations', ['sortedDestinations']),
+    ...mapGetters('routes', ['allRouteSegments']),
+    ...mapGetters('pois', ['allPois', 'allAccommodations', 'allEvents']),
+
+    tripId() {
+      return parseInt(this.id);
+    },
+
+    trip() {
+      console.log('Current trip in TripDetailsPage:', this.currentTrip);
+      return this.currentTrip;
+    },
+
+    destinations() {
+      return this.sortedDestinations;
+    },
+
+    routeSegments() {
+      return this.allRouteSegments;
+    },
+
+    pointsOfInterest() {
+      return this.allPois;
+    },
+
+    hasLongSegments() {
+      // Check if any route segment is longer than 1 hours (3600 seconds)
+      return this.routeSegments.some((segment) => segment.duration > 3600);
+    },
+  },
+
+  created() {
+    console.log('Trip received in TripSummary:', this.trip);
+  },
+  watch: {
+    // Re-fetch trip data if ID changes
+    id: {
+      handler() {
+        this.loadTrip();
+      },
+      immediate: true,
+    },
+    trip: {
+      handler(newVal) {
+        console.log('Trip changed in TripSummary:', newVal);
+      },
+      deep: true,
+      immediate: true,
+    },
+  },
+
+  methods: {
+    ...mapActions('trips', ['fetchTrip', 'calculateRoutes']),
+    ...mapActions('destinations', ['addDestination', 'updateDestination', 'deleteDestination', 'reorderDestinations', 'selectDestination']),
+    ...mapActions('routes', ['setRouteSegments']),
+    ...mapActions('pois', ['fetchPoisForTrip', 'selectPoi', 'findPoisForSegment', 'findAccommodation', 'findEvents']),
+
+    async loadTrip() {
+      try {
+        this.loading = true;
+
+        // Clear existing data first
+        await this.$store.dispatch('destinations/setDestinations', []);
+        await this.$store.dispatch('routes/setRouteSegments', []);
+
+        // Fetch trip with all related data
+        const trip = await this.fetchTrip(this.tripId);
+
+        // Explicitly set destinations from the loaded trip
+        if (trip.destinations) {
+          await this.$store.dispatch('destinations/setDestinations', trip.destinations);
         }
-      },
-      
-      editTrip() {
-        this.$router.push(`/trip/${this.tripId}/edit`);
-      },
-      
-      editDestination(destination) {
-        this.destinationToEdit = destination;
-        this.showDestinationForm = true;
-      },
-      
-      closeDestinationForm() {
-        this.showDestinationForm = false;
-        this.destinationToEdit = null;
-      },
-      
-      async handleAddDestination(destinationData) {
-        try {
-          await this.addDestination(destinationData);
-          this.closeDestinationForm();
-          
-          // Recalculate routes if we have at least 2 destinations
-          if (this.destinations.length >= 2) {
-            await this.calculateRoutes(this.tripId);
-          }
-        } catch (error) {
-          console.error('Error adding destination:', error);
+
+        // Set route segments in store
+        if (trip.route_segments) {
+          await this.setRouteSegments(trip.route_segments);
         }
-      },
-      
-      async handleUpdateDestination({ id, data }) {
-        try {
-          await this.updateDestination({ id, destinationData: data });
-          
-          // If this was editing a form, close it
-          if (this.showDestinationForm) {
-            this.closeDestinationForm();
-          }
-          
-          // Recalculate routes if coordinates were changed
-          if (data.latitude !== undefined || data.longitude !== undefined) {
-            await this.calculateRoutes(this.tripId);
-          }
-        } catch (error) {
-          console.error('Error updating destination:', error);
-        }
-      },
-      
-      async handleDeleteDestination(destinationId) {
-        try {
-          await this.deleteDestination(destinationId);
-          
-          // Recalculate routes if we still have at least 2 destinations
-          if (this.destinations.length >= 2) {
-            await this.calculateRoutes(this.tripId);
-          }
-        } catch (error) {
-          console.error('Error deleting destination:', error);
-        }
-      },
-      
-      async handleReorderDestinations(updatedDestinations) {
-        try {
-          await this.reorderDestinations({
-            tripId: this.tripId,
-            destinations: updatedDestinations
-          });
-          
-          // Recalculate routes
-          await this.calculateRoutes(this.tripId);
-        } catch (error) {
-          console.error('Error reordering destinations:', error);
-        }
-      },
-      
-      handleDestinationAdded() {
+
+        // Fetch POIs
+        await this.fetchPoisForTrip(this.tripId);
+
+        // Clear selections
+        this.selectedDestinationId = null;
+        this.selectedPoiId = null;
+      } catch (error) {
+        console.error('Error loading trip:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    editTrip() {
+      this.$router.push(`/trip/${this.tripId}/edit`);
+    },
+
+    editDestination(destination) {
+      this.destinationToEdit = destination;
+      this.showDestinationForm = true;
+    },
+
+    closeDestinationForm() {
+      this.showDestinationForm = false;
+      this.destinationToEdit = null;
+    },
+
+    async handleAddDestination(destinationData) {
+      try {
+        await this.addDestination(destinationData);
+        this.closeDestinationForm();
+
         // Recalculate routes if we have at least 2 destinations
         if (this.destinations.length >= 2) {
-          this.calculateRoutes(this.tripId);
+          await this.calculateRoutes(this.tripId);
         }
-      },
-      
-      selectDestination(destination) {
-        this.selectedDestinationId = destination.id;
-        this.selectDestination(destination);
-      },
-      
-      selectPoi(poi) {
-        this.selectedPoiId = poi.id;
-        this.selectPoi(poi);
-      },
-      
-      findPointsOfInterest() {
-        this.showPoiFinder = true;
-      },
-      
-      findAccommodation() {
-        this.showAccommodationFinder = true;
-      },
-      
-      findEvents() {
-        this.showEventsFinder = true;
-      },
-      
-      handlePoisFound() {
-        this.showPoiFinder = false;
-        this.showPois = true;
-      },
-      
-      handleAccommodationsFound() {
-        this.showAccommodationFinder = false;
-      },
-      
-      handleEventsFound() {
-        this.showEventsFinder = false;
+      } catch (error) {
+        console.error('Error adding destination:', error);
       }
-    }
-  };
-  </script>
-  
- <style scoped>
+    },
+
+    async handleUpdateDestination({ id, data }) {
+      try {
+        await this.updateDestination({ id, destinationData: data });
+
+        // If this was editing a form, close it
+        if (this.showDestinationForm) {
+          this.closeDestinationForm();
+        }
+
+        // Recalculate routes if coordinates were changed
+        if (data.latitude !== undefined || data.longitude !== undefined) {
+          await this.calculateRoutes(this.tripId);
+        }
+      } catch (error) {
+        console.error('Error updating destination:', error);
+      }
+    },
+
+    async handleDeleteDestination(destinationId) {
+      try {
+        await this.deleteDestination(destinationId);
+
+        // Recalculate routes if we still have at least 2 destinations
+        if (this.destinations.length >= 2) {
+          await this.calculateRoutes(this.tripId);
+        }
+      } catch (error) {
+        console.error('Error deleting destination:', error);
+      }
+    },
+
+    async handleReorderDestinations(updatedDestinations) {
+      try {
+        console.log('Handling reorder with destinations:', updatedDestinations); // Debug log
+
+        console.log('Received destinations for reordering:', updatedDestinations);
+        console.log('Trip ID:', this.tripId);
+
+        if (!updatedDestinations || !Array.isArray(updatedDestinations)) {
+          console.error('Invalid destinations received:', updatedDestinations);
+          return;
+        }
+
+        await this.reorderDestinations({
+          tripId: this.tripId,
+          destinations: updatedDestinations,
+        });
+
+        // Recalculate routes
+        await this.calculateRoutes(this.tripId);
+      } catch (error) {
+        console.error('Error reordering destinations:', error);
+      }
+    },
+
+    handleDestinationAdded() {
+      // Recalculate routes if we have at least 2 destinations
+      if (this.destinations.length >= 2) {
+        this.calculateRoutes(this.tripId);
+      }
+    },
+
+    handleSelectDestination(destination) {
+      this.selectedDestinationId = destination.id;
+      this.selectDestination(destination);
+    },
+
+    selectPoi(poi) {
+      this.selectedPoiId = poi.id;
+      this.selectPoi(poi);
+    },
+
+    handleError(message) {
+      console.error('Error from child component:', message);
+      // You could also show a user-friendly error message here
+      this.$store.dispatch('setError', message, { root: true });
+    },
+
+    findPointsOfInterest() {
+      this.showPoiFinder = true;
+    },
+
+    findAccommodation() {
+      this.showAccommodationFinder = true;
+    },
+
+    findEvents() {
+      this.showEventsFinder = true;
+    },
+
+    handlePoisFound() {
+      this.showPoiFinder = false;
+      this.showPois = true;
+    },
+
+    handleAccommodationsFound() {
+      this.showAccommodationFinder = false;
+    },
+
+    handleEventsFound() {
+      this.showEventsFinder = false;
+    },
+  },
+};
+</script>
+
+<style scoped>
 .trip-details-page {
   position: relative;
   min-height: 100vh;
 }
-
 
 /* Enhanced modal positioning with better spacing */
 .modal {
@@ -463,16 +431,20 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { 
+  from {
     transform: translateY(20px);
     opacity: 0;
   }
-  to { 
+  to {
     transform: translateY(0);
     opacity: 1;
   }
@@ -587,7 +559,7 @@
 
 .toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 20px;
   width: 20px;
   left: 2px;
@@ -645,11 +617,10 @@
 
 /* Tablet and up */
 @media (min-width: 768px) {
-
   .modal {
     padding: 3rem 2rem; /* Even more padding on larger screens */
   }
-  
+
   .modal-content {
     margin-top: 3rem; /* Increased spacing on larger screens */
     margin-bottom: 3rem;
@@ -659,15 +630,15 @@
     justify-content: space-between;
     align-items: flex-start;
   }
-  
+
   .page-title {
     font-size: 1.75rem;
   }
-  
+
   .btn-text {
     display: inline;
   }
-  
+
   .content-layout {
     display: grid;
     grid-template-columns: 1fr;
@@ -675,32 +646,32 @@
     max-width: 100%;
     margin: 0 auto;
   }
-  
+
   /* Map takes full width */
   .map-section {
     grid-column: 1;
     grid-row: 1;
     min-height: 450px;
   }
-  
+
   /* Summary below map */
   .summary-section {
     grid-column: 1;
     grid-row: 2;
   }
-  
+
   /* Destinations below summary */
   .destinations-section {
     grid-column: 1;
     grid-row: 3;
   }
-  
+
   /* POI section below destinations */
   .poi-section {
     grid-column: 1;
     grid-row: 4;
   }
-  
+
   /* Actions below POI */
   .actions-section {
     grid-column: 1;
@@ -720,7 +691,7 @@
   .page-title {
     font-size: 2rem;
   }
-  
+
   .content-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -728,41 +699,41 @@
     max-width: 1400px;
     margin: 0 auto;
   }
-  
+
   /* Map takes full width */
   .map-section {
     grid-column: 1 / -1;
     grid-row: 1;
   }
-  
+
   /* Summary and POI are side by side below map */
   .summary-section {
     grid-column: 1;
     grid-row: 2;
   }
-  
+
   .poi-section {
     grid-column: 2;
     grid-row: 2;
   }
-  
+
   /* Destinations and Actions are below */
   .destinations-section {
     grid-column: 1;
     grid-row: 3;
   }
-  
+
   .actions-section {
     grid-column: 2;
     grid-row: 3;
   }
-  
+
   /* If POI is not shown, summary takes full width */
   .poi-section:empty + .destinations-section {
     grid-column: 1;
     grid-row: 3;
   }
-  
+
   /* Adjust map height for desktop */
   .map-section {
     min-height: 600px;
@@ -777,9 +748,6 @@
 }
 </style>
 
-
-
 <!--This file is part of the Vue Front End framework. -->
-
 
 <!-- src/views/TripDetailsPage.vue -->

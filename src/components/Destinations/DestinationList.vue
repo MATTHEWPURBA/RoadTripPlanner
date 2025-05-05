@@ -128,6 +128,16 @@
   export default {
     name: 'DestinationList',
     
+    watch: {
+      destinations: {
+        handler(newVal) {
+          console.log('Destinations prop changed:', newVal);
+        },
+        deep: true,
+        immediate: true
+      }
+    },
+
     props: {
       destinations: {
         type: Array,
@@ -170,6 +180,10 @@
     
     computed: {
       sortedDestinations() {
+        console.log('Computing sortedDestinations');
+        console.log('Reordering active:', this.reorderingActive);
+        console.log('Reordering destinations:', this.reorderingDestinations);
+        console.log('Original destinations:', this.destinations);
         if (this.reorderingActive) {
           return this.reorderingDestinations;
         }
@@ -215,8 +229,28 @@
         if (this.reorderingActive) {
           this.cancelReordering();
         } else {
-          this.reorderingActive = true;
-          this.reorderingDestinations = [...this.sortedDestinations];
+        // Create a copy of sorted destinations BEFORE setting reorderingActive
+        const sortedCopy = [...this.destinations].sort((a, b) => a.order - b.order);
+
+        // Deep copy each destination object
+        this.reorderingDestinations = sortedCopy.map(dest => ({
+          id: dest.id,
+          name: dest.name,
+          address: dest.address,
+          order: dest.order,
+          latitude: dest.latitude,
+          longitude: dest.longitude,
+          trip_id: dest.trip_id
+        }));
+
+
+        // Now set reorderingActive
+        this.reorderingActive = true;
+        // Verify the copy worked
+        console.log('Reordering destinations after copy:', this.reorderingDestinations);
+        console.log('Number of destinations:', this.reorderingDestinations.length);
+
+
         }
       },
       
@@ -231,28 +265,33 @@
           ...dest,
           order: index
         }));
+
+        console.log('Emitting reorder-destinations with:', updatedDestinations);
         
         this.$emit('reorder-destinations', updatedDestinations);
         this.reorderingActive = false;
       },
       
+      // Update moveUp and moveDown to properly update the array
       moveUp(destination) {
         const index = this.reorderingDestinations.findIndex(d => d.id === destination.id);
         if (index > 0) {
-          // Swap with the previous destination
-          const temp = { ...this.reorderingDestinations[index - 1] };
-          this.reorderingDestinations[index - 1] = { ...this.reorderingDestinations[index] };
-          this.reorderingDestinations[index] = temp;
+          // Create a new array to ensure reactivity
+          const newArray = [...this.reorderingDestinations];
+          // Swap elements
+          [newArray[index - 1], newArray[index]] = [newArray[index], newArray[index - 1]];
+          this.reorderingDestinations = newArray;
         }
       },
       
       moveDown(destination) {
         const index = this.reorderingDestinations.findIndex(d => d.id === destination.id);
         if (index < this.reorderingDestinations.length - 1) {
-          // Swap with the next destination
-          const temp = { ...this.reorderingDestinations[index + 1] };
-          this.reorderingDestinations[index + 1] = { ...this.reorderingDestinations[index] };
-          this.reorderingDestinations[index] = temp;
+          // Create a new array to ensure reactivity
+          const newArray = [...this.reorderingDestinations];
+          // Swap elements
+          [newArray[index], newArray[index + 1]] = [newArray[index + 1], newArray[index]];
+          this.reorderingDestinations = newArray;
         }
       },
       

@@ -35,6 +35,10 @@ export default {
       }
     },
     SET_CURRENT_TRIP(state, trip) {
+      console.log('Setting current trip:', trip);
+      if (trip && !trip.id) {
+        console.warn('Trip object missing ID!', trip);
+      }
       state.currentTrip = trip;
     },
   },
@@ -124,8 +128,19 @@ export default {
     // Calculate routes for a trip
     async calculateRoutes({ commit, dispatch }, tripId) {
       try {
+
+            // Validate tripId
+    if (!tripId) {
+      throw new Error('Trip ID is required for route calculation');
+    }
+
         dispatch('setLoading', true, { root: true });
-        const trip = await tripService.calculateRoutes(tripId);
+
+            const response = await tripService.calculateRoutes(tripId);
+
+    // Extract the trip from the response
+    const trip = response.trip || response;
+    console.log('Extracted trip for store update:', trip);
         commit('UPDATE_TRIP', trip);
         commit('SET_CURRENT_TRIP', trip);
         return trip;
